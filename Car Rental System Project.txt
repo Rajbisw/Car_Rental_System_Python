@@ -1,0 +1,138 @@
+# Class for Car
+class Car:
+    def __init__(self, car_id, make, model, year, daily_rate, availability=True):
+        self.car_id = car_id
+        self.make = make
+        self.model = model
+        self.year = year
+        self.daily_rate = daily_rate
+        self.availability = availability
+
+    def __str__(self):
+        return f"Car ID: {self.car_id}, Make: {self.make}, Model: {self.model}, Year: {self.year}, Rate: ${self.daily_rate}/day, Available: {self.availability}"
+
+    def rent(self):
+        """Mark the car as rented."""
+        self.availability = False
+
+    def return_car(self):
+        """Mark the car as available."""
+        self.availability = True
+
+
+# Class for Customer
+class Customer:
+    def __init__(self, customer_id, name, phone, email):
+        self.customer_id = customer_id
+        self.name = name
+        self.phone = phone
+        self.email = email
+        self.rented_car = None
+
+    def __str__(self):
+        return f"Customer ID: {self.customer_id}, Name: {self.name}, Phone: {self.phone}, Email: {self.email}"
+
+    def rent_car(self, car):
+        if self.rented_car:
+            print(f"{self.name} already has a rented car: {self.rented_car.make} {self.rented_car.model}")
+            return
+        if car.availability:
+            self.rented_car = car
+            car.rent()
+            print(f"{self.name} successfully rented {car.make} {car.model}")
+        else:
+            print(f"Car {car.make} {car.model} is not available.")
+
+    def return_car(self):
+        if not self.rented_car:
+            print(f"{self.name} has no car to return.")
+            return
+        print(f"{self.name} has returned {self.rented_car.make} {self.rented_car.model}")
+        self.rented_car.return_car()
+        self.rented_car = None
+
+
+# Class for RentalService
+class RentalService:
+    def __init__(self):
+        self.cars = []
+        self.customers = []
+
+    def add_car(self, car):
+        self.cars.append(car)
+
+    def add_customer(self, customer):
+        self.customers.append(customer)
+
+    def show_available_cars(self):
+        available_cars = [car for car in self.cars if car.availability]
+        if available_cars:
+            print("Available Cars for Rent:")
+            for car in available_cars:
+                print(car)
+        else:
+            print("No cars are available at the moment.")
+
+    def rent_car_to_customer(self, customer_id, car_id):
+        customer = next((cust for cust in self.customers if cust.customer_id == customer_id), None)
+        car = next((car for car in self.cars if car.car_id == car_id), None)
+        
+        if customer and car:
+            customer.rent_car(car)
+        else:
+            print("Invalid Customer ID or Car ID.")
+
+    def return_car_from_customer(self, customer_id):
+        customer = next((cust for cust in self.customers if cust.customer_id == customer_id), None)
+        
+        if customer:
+            customer.return_car()
+        else:
+            print("Invalid Customer ID.")
+
+
+# Main Function for Interaction
+def main():
+    # Create the Rental Service
+    service = RentalService()
+
+    # Add some cars
+    car1 = Car(1, "Toyota", "Camry", 2020, 40)
+    car2 = Car(2, "Honda", "Civic", 2022, 50)
+    car3 = Car(3, "Ford", "Focus", 2021, 45)
+    
+    service.add_car(car1)
+    service.add_car(car2)
+    service.add_car(car3)
+
+    # Take customer details from the user
+    print("Enter Customer Details:")
+    customer_id = int(input("Enter Customer ID: "))
+    name = input("Enter Name: ")
+    phone = input("Enter Phone Number: ")
+    email = input("Enter Email: ")
+    
+    customer = Customer(customer_id, name, phone, email)
+    service.add_customer(customer)
+
+    # Show available cars
+    service.show_available_cars()
+
+    # Rent car to customer
+    rent_car_id = int(input(f"\n{customer.name}, enter the car ID you want to rent: "))
+    service.rent_car_to_customer(customer_id, rent_car_id)
+
+    # Show available cars after renting
+    service.show_available_cars()
+
+    # Return car from customer
+    return_car = input(f"\n{customer.name}, do you want to return the car? (yes/no): ").strip().lower()
+    if return_car == 'yes':
+        service.return_car_from_customer(customer_id)
+
+    # Show available cars after returning
+    service.show_available_cars()
+
+
+if __name__ == "__main__":
+    main()
